@@ -1,7 +1,7 @@
 package enums;
 
 public enum FeePriority {
-    FIRST,
-    AVERAGE,
-    LAST
+    ECONOMIQUE,
+    STANDARD,
+    RAPIDE
 }
