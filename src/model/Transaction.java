@@ -25,9 +25,11 @@ public abstract class Transaction {
         this.feeStrategy = strategy;
         this.status = TransactionStatus.PENDING;
         this.createdAt = LocalDateTime.now();
-        this.fees = feeStrategy.calculateFees();
+        this.fees = feeStrategy.calculateFees(this);
         this.id = generateTransactionId();
     }
+    
+    
 
     protected abstract String generateTransactionId();
 

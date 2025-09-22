@@ -10,7 +10,7 @@ public class EthereumFeeStrategy implements FeeCalculationStrategy{
     private static final double DEFAULT_GAS_PRICE_GWEI = 50;
 
     @Override
-    public double calculateFees() {
+    public double calculateFees(Transaction ts) {
         double gasPriceEth = DEFAULT_GAS_PRICE_GWEI * 1e-9;
         return DEFAULT_GAS_LIMIT * gasPriceEth;
     }

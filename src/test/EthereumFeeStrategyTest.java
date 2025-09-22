@@ -2,6 +2,7 @@ package test;
 
 import static org.junit.Assert.*;
 import strategy.*;
+import model.Transaction;
 import org.junit.Test;
 
 public class EthereumFeeStrategyTest {
@@ -9,6 +10,7 @@ public class EthereumFeeStrategyTest {
 	@Test
 	public void testCalculateFee(){
 		EthereumFeeStrategy calculator = new EthereumFeeStrategy();
+		Transaction obj = new Transaction();
         double fee = calculator.calculateFees();
 
          
