@@ -2,6 +2,6 @@ package strategy;
 import model.Transaction;
 
 public interface FeeCalculationStrategy {
-    double calculateFees(Transaction ts);
+    double calculateFees();
     int estimateConfirmationTime(Transaction tx);
 }

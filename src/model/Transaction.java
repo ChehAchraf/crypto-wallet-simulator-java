@@ -17,6 +17,20 @@ public abstract class Transaction {
     protected CryptoType cryptoType;
     protected FeeCalculationStrategy feeStrategy;
 
+    public Transaction(String from, String to, double amount, FeePriority feePriority, FeeCalculationStrategy strategy) {
+        this.fromAddress = from;
+        this.toAddress = to;
+        this.amount = amount;
+        this.feePriority = feePriority;
+        this.feeStrategy = strategy;
+        this.status = TransactionStatus.PENDING;
+        this.createdAt = LocalDateTime.now();
+        this.fees = feeStrategy.calculateFees(this);
+        this.id = generateTransactionId();
+    }
+
+    protected abstract String generateTransactionId();
+
     public String getId() {
         return id;
     }
@@ -97,17 +111,4 @@ public abstract class Transaction {
         this.feeStrategy = feeStrategy;
     }
 
-    public Transaction(String from, String to, double amount, FeePriority feePriority, FeeCalculationStrategy strategy) {
-        this.fromAddress = from;
-        this.toAddress = to;
-        this.amount = amount;
-        this.feePriority = feePriority;
-        this.feeStrategy = strategy;
-        this.status = TransactionStatus.PENDING;
-        this.createdAt = LocalDateTime.now();
-        this.fees = feeStrategy.calculateFees(this);
-        this.id = generateTransactionId();
-    }
-
-    protected abstract String generateTransactionId();
 }
