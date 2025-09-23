@@ -1,33 +1,36 @@
 package repository;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import model.Wallet;
 
-public class WalletRepositoryImp implements WalletRepository {
+public class WalletRepositoryImp implements Repository {
 
-	@Override
-	public void save(Wallet wallet) {
-		// TODO Auto-generated method stub
-		
-	}
 
-	@Override
-	public Wallet findbyCode(String code) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public void save(Object entity) {
 
-	@Override
-	public List<Wallet> findAll() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    }
 
-	@Override
-	public void delete(String code) {
-		// TODO Auto-generated method stub
-		
-	}
+    @Override
+    public Optional findbyCode(String code) {
+        return Optional.empty();
+    }
 
+    @Override
+    public List findAll() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public void update(Object entity) {
+
+    }
+
+    @Override
+    public void delete(Object entity) {
+
+    }
 }
