@@ -17,6 +17,10 @@ public abstract class Transaction {
     protected CryptoType cryptoType;
     protected FeeCalculationStrategy feeStrategy;
 
+    public Transaction() {
+    	
+    }
+    
     public Transaction(String from, String to, double amount, FeePriority feePriority, FeeCalculationStrategy strategy) {
         this.fromAddress = from;
         this.toAddress = to;
