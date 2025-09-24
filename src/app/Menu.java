@@ -56,8 +56,9 @@ public class Menu {
 
     // create wallet
     private void createWallet() {
-        System.out.print("1 - Bitcoin Wallet");
-        System.out.print("2 - Ethereum Wallet");
+        System.out.println("1 - Bitcoin Wallet");
+        System.out.println("2 - Ethereum Wallet");
+        System.out.print("\n[+] - enter your choice : ");
         String choice = scanner.nextLine();
         switch (choice) {
         // case one => creating Bitcoin wallet 😁
@@ -91,10 +92,9 @@ public class Menu {
         				System.out.print("\nPlease enter a valid amount : ");
         				amountAsString = scanner.nextLine();
         			}
-        			
-        			
+
         			double amount = Double.parseDouble(amountAsString);
-        			
+
             		Wallet ethWallet = new EthereumWallet(amount);
                 walletService.createWallet(ethWallet);
                 System.out.println("Ethereum wallet created successfully");
@@ -102,7 +102,7 @@ public class Menu {
         		}catch (NumberFormatException e) {
         		    System.out.println("Invalid number format. Please enter a valid numeric value.");
         		} catch (Exception e) {
-        		    System.out.println("Unexpected error while creating Bitcoin wallet: " + e.getMessage());
+        		    System.out.println("Unexpected error while creating Ethereum wallet: " + e.getMessage());
         		}
             	break;
             
