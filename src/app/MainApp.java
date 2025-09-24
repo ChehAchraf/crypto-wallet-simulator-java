@@ -10,5 +10,4 @@ public class MainApp {
             System.out.println("Error while launchin app : " + e.getMessage());
         }
     }
-    
 }
