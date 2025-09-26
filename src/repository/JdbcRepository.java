@@ -1,6 +1,5 @@
 package repository;
 import db.DBConnection;
-import model.Wallet;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,9 +26,22 @@ public abstract class JdbcRepository<T> implements Repository<T>{
 	@Override
 	public void save(T entity) {
 		String sql = getInsertQuery();
-        try(Connection conn = connection.getConnection();PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try(Connection conn = connection.getConnection();PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             setInsertParams(stmt, entity);
             stmt.executeUpdate();
+            
+            // Get the generated ID and set it to the entity
+            try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    int generatedId = generatedKeys.getInt(1);
+                    // Try to set the ID if the entity has a setId method
+                    try {
+                        entity.getClass().getMethod("setId", int.class).invoke(entity, generatedId);
+                    } catch (Exception e) {
+                        // Entity doesn't have setId method, that's okay
+                    }
+                }
+            }
         }catch(SQLException e){
             logger.log(Level.SEVERE, "Error saving entity in " + getTableName(), e);
         }
@@ -56,8 +68,7 @@ public abstract class JdbcRepository<T> implements Repository<T>{
 		List<T> list = new ArrayList<>();
 		String sql = "select * from " + getTableName();
         try(Connection conn = connection.getConnection();PreparedStatement stmt = conn.prepareStatement(sql)) {
-            PreparedStatement pstmt = conn.prepareStatement(sql);
-            ResultSet rs = pstmt.executeQuery();
+            ResultSet rs = stmt.executeQuery();
             while(rs.next()) {
                 list.add(mapToEntity(rs));
             }
@@ -80,6 +91,7 @@ public abstract class JdbcRepository<T> implements Repository<T>{
             logger.log(Level.SEVERE, "Error updating entity in " + getTableName(), e);
         }
 	}
+	
 
 	@Override
 	public void delete(T entity) {
@@ -94,5 +106,17 @@ public abstract class JdbcRepository<T> implements Repository<T>{
             logger.log(Level.SEVERE, "Error deleting entity in " + getTableName(), e);
         }
 	}
+
+	public int getLastInsertedId() throws SQLException {
+        String sql = "SELECT LASTVAL()";
+        try (Connection conn = connection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        }
+        return -1;
+    }
 
 }

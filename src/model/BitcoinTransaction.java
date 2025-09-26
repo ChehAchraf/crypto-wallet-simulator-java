@@ -1,22 +1,16 @@
 package model;
 
+import enums.CryptoType;
 import enums.FeePriority;
-import strategy.FeeCalculationStrategy;
+import strategy.BitcoinFeeStrategy;
 
 public class BitcoinTransaction extends Transaction {
-	
-	public BitcoinTransaction() {
-		
-	}
-	
-	public BitcoinTransaction(String from, String to, double amount, FeePriority feePriority,FeeCalculationStrategy strategy) {
-		super(from, to, amount, feePriority, strategy);
-		
-	}
-	
-	@Override
-	protected String generateTransactionId() {
-		return null;
-	}
+
+    public BitcoinTransaction(String from, String to, double amount, FeePriority feePriority) {
+        super(from, to, amount, feePriority, new BitcoinFeeStrategy());
+        this.setCryptoType(CryptoType.BITCOIN);
+    }
+
+
 
 }
