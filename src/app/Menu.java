@@ -14,7 +14,9 @@ public class Menu {
 
     private TransactionService transactionService;
     private WalletService walletService;
-    private WalletRepository walletRepository;
+    private TransactionValidationService validationService;
+    private BalanceService balanceService;
+    private TransactionProcessingService transactionProcessingService;
     private Scanner scanner;
     private boolean isActive;
     private MempoolService mempoolService;
@@ -26,6 +28,9 @@ public class Menu {
         TransactionRepository transactionRepository = new TransactionRepository(dbConnection);
         this.transactionService = new TransactionService(transactionRepository);
         this.walletService = new WalletService(walletRepository);
+        this.validationService = new TransactionValidationService(walletService);
+        this.balanceService = new BalanceService(walletService);
+        this.transactionProcessingService = new TransactionProcessingService(transactionRepository, validationService, balanceService);
         this.mempoolService = mempoolService;
     }
 
@@ -44,10 +49,10 @@ public class Menu {
         String choice = scanner.nextLine();
         switch (choice) {
             case "1":
-                createWallet();
+            		createWallet();
                 break;
             case "2":
-                DisplayWallets();
+            		DisplayWallets();
                 break;
             case "3":
                 makeTransaction();
@@ -64,7 +69,7 @@ public class Menu {
         }
     }
 
-    private void showMenu() {
+	private void showMenu() {
         System.out.println("1. Create Wallet");
         System.out.println("2. Display all Wallets");
         System.out.println("3. Make a transaction");
@@ -81,7 +86,7 @@ public class Menu {
         switch (choice) {
             // case one => creating Bitcoin wallet 😁
             case "1":
-                try {
+            		try {
                     System.out.print("\nPlease enter your amount : ");
                     String amountAsString = scanner.nextLine();
                     while (!InputValidation.isDouble(amountAsString)) {
@@ -91,9 +96,9 @@ public class Menu {
 
                     double amount = Double.parseDouble(amountAsString);
 
-                    Wallet btcWallet = new BitcoinWallet(amount);
-                    walletService.createWallet(btcWallet);
-                    System.out.println("Bitcoin wallet created successfully");
+                		Wallet btcWallet = new BitcoinWallet(amount);
+                        walletService.createWallet(btcWallet);
+                        System.out.println("Bitcoin wallet created successfully");
 
                 } catch (NumberFormatException e) {
                     System.out.println("Invalid number format. Please enter a valid numeric value.");
@@ -121,14 +126,14 @@ public class Menu {
                     System.out.println("Invalid number format. Please enter a valid numeric value.");
                 } catch (Exception e) {
                     System.out.println("Unexpected error while creating Ethereum wallet: " + e.getMessage());
-                }
-                break;
+            		}
+                    break;
 
         }
     }
-
+    
     private void DisplayWallets() {
-        System.out.println("====== list of wallets =======");
+    		System.out.println("====== list of wallets =======");
         List<Wallet> listWallet = walletService.getAllWallets();
         listWallet.stream().forEach(p -> System.out.println("adresse : " + p.getAddress()));
         System.out.println("==============================");
@@ -139,7 +144,7 @@ public class Menu {
         String sourceAdresse;
         String toAddress;
         String amountAsString;
-        double amountDouble;
+        double amountDouble = 0;
         int priorityChoice = 0;
 
         System.out.println("[+] Please chose what wallet you wanna make transaction: ");
@@ -151,8 +156,10 @@ public class Menu {
             case "1":
                 System.out.print("\nPlease enter youre wallet address : ");
                 sourceAdresse = scanner.nextLine();
+
                 System.out.print("\nNow please add the wallet address you wanna send BTC to : ");
                 toAddress = scanner.nextLine();
+
                 System.out.print("\nPlease enter your amount : ");
                 amountAsString = scanner.nextLine();
                 while (!InputValidation.isDouble(amountAsString)) {
@@ -160,6 +167,7 @@ public class Menu {
                     amountAsString = scanner.nextLine();
                 }
                 amountDouble = Double.parseDouble(amountAsString);
+                
                 System.out.println("[+] Now please may you chose the fee type : ");
                 while (priorityChoice == 0) {
                     System.out.println("1 - Rapide");
@@ -169,29 +177,108 @@ public class Menu {
                     switch (priorityChoice) {
                         case 1:
                             Transaction btcTransactionRap = new BitcoinTransaction(sourceAdresse, toAddress, amountDouble, FeePriority.RAPIDE);
-                            if (transactionService.creatTransaction(btcTransactionRap)) {
-                                System.out.println("Bitcoin transaction created successfully with ID: " + btcTransactionRap.getId());
-                                mempoolService.addTransaction(btcTransactionRap);
+                            TransactionProcessingService.TransactionResult result1 = transactionProcessingService.processTransaction(btcTransactionRap);
+                            
+                            if (result1.isSuccess()) {
+                                System.out.println("Bitcoin transaction created successfully with ID: " + result1.getTransaction().getId());
+                                System.out.println("Balance updated: " + sourceAdresse + " " + balanceService.getBalanceInfo(sourceAdresse));
+                                System.out.println("Balance updated: " + toAddress + " " + balanceService.getBalanceInfo(toAddress));
+                                mempoolService.addTransaction(result1.getTransaction());
                             } else {
-                                System.out.println("Bitcoin transaction creation failed, please try again");
+                                System.out.println(result1.getErrorMessage());
                             }
                             break;
                         case 2:
                             Transaction btcTransactionSta = new BitcoinTransaction(sourceAdresse, toAddress, amountDouble, FeePriority.STANDARD);
-                            if (transactionService.creatTransaction(btcTransactionSta)) {
-                                System.out.println("Bitcoin transaction created successfully with ID: " + btcTransactionSta.getId());
-                                mempoolService.addTransaction(btcTransactionSta);
+                            TransactionProcessingService.TransactionResult result2 = transactionProcessingService.processTransaction(btcTransactionSta);
+                            
+                            if (result2.isSuccess()) {
+                                System.out.println("Bitcoin transaction created successfully with ID: " + result2.getTransaction().getId());
+                                System.out.println("Balance updated: " + sourceAdresse + " " + balanceService.getBalanceInfo(sourceAdresse));
+                                System.out.println("Balance updated: " + toAddress + " " + balanceService.getBalanceInfo(toAddress));
+                                mempoolService.addTransaction(result2.getTransaction());
                             } else {
-                                System.out.println("Bitcoin transaction creation failed, please try again");
+                                System.out.println(result2.getErrorMessage());
                             }
                             break;
                         case 3:
                             Transaction btcTransactionEco = new BitcoinTransaction(sourceAdresse, toAddress, amountDouble, FeePriority.ECONOMIQUE);
-                            if (transactionService.creatTransaction(btcTransactionEco)) {
-                                System.out.println("Bitcoin transaction created successfully with ID: " + btcTransactionEco.getId());
-                                mempoolService.addTransaction(btcTransactionEco);
+                            TransactionProcessingService.TransactionResult result3 = transactionProcessingService.processTransaction(btcTransactionEco);
+                            
+                            if (result3.isSuccess()) {
+                                System.out.println("Bitcoin transaction created successfully with ID: " + result3.getTransaction().getId());
+                                System.out.println("Balance updated: " + sourceAdresse + " " + balanceService.getBalanceInfo(sourceAdresse));
+                                System.out.println("Balance updated: " + toAddress + " " + balanceService.getBalanceInfo(toAddress));
+                                mempoolService.addTransaction(result3.getTransaction());
                             } else {
-                                System.out.println("Bitcoin transaction creation failed, please try again");
+                                System.out.println(result3.getErrorMessage());
+                            }
+                            break;
+                        default:
+                            System.out.println("Invalid choice. Please enter a valid choice.");
+                            break;
+                    }
+                }
+                break;
+            case "2":
+                System.out.print("\nPlease enter youre wallet address : ");
+                sourceAdresse = scanner.nextLine();
+
+                System.out.print("\nNow please add the wallet address you wanna send ETH to : ");
+                toAddress = scanner.nextLine();
+
+                System.out.print("\nPlease enter your amount : ");
+                amountAsString = scanner.nextLine();
+                while (!InputValidation.isDouble(amountAsString)) {
+                    System.out.println("Please enter a valid amount : ");
+                    amountAsString = scanner.nextLine();
+                }
+                amountDouble = Double.parseDouble(amountAsString);
+                
+                System.out.println("[+] Now please may you chose the fee type : ");
+                while (priorityChoice == 0) {
+                    System.out.println("1 - Rapide");
+                    System.out.println("2 - Standard");
+                    System.out.println("3 - Economique");
+                    priorityChoice = Integer.parseInt(scanner.nextLine());
+                    switch (priorityChoice) {
+                        case 1:
+                            Transaction ethTransactionRap = new EthereumTransaction(sourceAdresse, toAddress, amountDouble, FeePriority.RAPIDE);
+                            TransactionProcessingService.TransactionResult result1 = transactionProcessingService.processTransaction(ethTransactionRap);
+                            
+                            if (result1.isSuccess()) {
+                                System.out.println("Ethereum transaction created successfully with ID: " + result1.getTransaction().getId());
+                                System.out.println("Balance updated: " + sourceAdresse + " " + balanceService.getBalanceInfo(sourceAdresse));
+                                System.out.println("Balance updated: " + toAddress + " " + balanceService.getBalanceInfo(toAddress));
+                                mempoolService.addTransaction(result1.getTransaction());
+                            } else {
+                                System.out.println(result1.getErrorMessage());
+                            }
+                            break;
+                        case 2:
+                            Transaction ethTransactionSta = new EthereumTransaction(sourceAdresse, toAddress, amountDouble, FeePriority.STANDARD);
+                            TransactionProcessingService.TransactionResult result2 = transactionProcessingService.processTransaction(ethTransactionSta);
+                            
+                            if (result2.isSuccess()) {
+                                System.out.println("Ethereum transaction created successfully with ID: " + result2.getTransaction().getId());
+                                System.out.println("Balance updated: " + sourceAdresse + " " + balanceService.getBalanceInfo(sourceAdresse));
+                                System.out.println("Balance updated: " + toAddress + " " + balanceService.getBalanceInfo(toAddress));
+                                mempoolService.addTransaction(result2.getTransaction());
+                            } else {
+                                System.out.println(result2.getErrorMessage());
+                            }
+                            break;
+                        case 3:
+                            Transaction ethTransactionEco = new EthereumTransaction(sourceAdresse, toAddress, amountDouble, FeePriority.ECONOMIQUE);
+                            TransactionProcessingService.TransactionResult result3 = transactionProcessingService.processTransaction(ethTransactionEco);
+                            
+                            if (result3.isSuccess()) {
+                                System.out.println("Ethereum transaction created successfully with ID: " + result3.getTransaction().getId());
+                                System.out.println("Balance updated: " + sourceAdresse + " " + balanceService.getBalanceInfo(sourceAdresse));
+                                System.out.println("Balance updated: " + toAddress + " " + balanceService.getBalanceInfo(toAddress));
+                                mempoolService.addTransaction(result3.getTransaction());
+                            } else {
+                                System.out.println(result3.getErrorMessage());
                             }
                             break;
                         default:
