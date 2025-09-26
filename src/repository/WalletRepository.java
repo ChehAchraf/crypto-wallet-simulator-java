@@ -1,5 +1,6 @@
 package repository;
 
+import java.util.Optional;
 import db.DBConnection;
 import enums.CryptoType;
 import model.BitcoinWallet;
@@ -67,6 +68,46 @@ public class WalletRepository extends JdbcRepository<Wallet>{
     protected String getInsertQuery() {
         return "INSERT INTO wallets(address,amount, type) VALUES (?, ?, ?)";
     }
+
+    public Optional<Wallet> findByAddress(String address) {
+        String sql = "SELECT * FROM " + getTableName() + " WHERE address = ?";
+        try (PreparedStatement stmt = connection.getConnection().prepareStatement(sql)) {
+            stmt.setString(1, address);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return Optional.of(mapToEntity(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return Optional.empty();
+    }
+
+    public Optional<Double> getBalance(String address) {
+        String sql = "SELECT amount FROM " + getTableName() + " WHERE address = ?";
+        try (PreparedStatement stmt = connection.getConnection().prepareStatement(sql)) {
+            stmt.setString(1, address);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                    return Optional.of(rs.getDouble("amount"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return Optional.empty();
+    }
+    
+    public void updateBalance(String address, double newBalance) {
+        String sql = "UPDATE " + getTableName() + " SET amount = ? WHERE address = ?";
+        try (PreparedStatement stmt = connection.getConnection().prepareStatement(sql)) {
+            stmt.setDouble(1, newBalance);
+            stmt.setString(2, address);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
 
 
 }
