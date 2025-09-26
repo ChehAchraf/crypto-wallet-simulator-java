@@ -3,24 +3,20 @@ import enums.*;
 import strategy.FeeCalculationStrategy;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 public abstract class Transaction {
-    private static int counter = 0;
-    protected String id;
-    protected String fromAddress;
-    protected String toAddress;
-    protected double amount;
-    protected LocalDateTime createdAt;
-    protected double fees;
-    protected FeePriority feePriority;
-    protected TransactionStatus status;
-    protected CryptoType cryptoType;
-    protected FeeCalculationStrategy feeStrategy;
+    private int id;
+    private String fromAddress;
+    private String toAddress;
+    private double amount;
+    private LocalDateTime createdAt;
+    private double fees;
+    private FeePriority feePriority;
+    private TransactionStatus status;
+    private CryptoType cryptoType;
+    private FeeCalculationStrategy feeStrategy;
 
-    public Transaction() {
-    	
-    }
-    
     public Transaction(String from, String to, double amount, FeePriority feePriority, FeeCalculationStrategy strategy) {
         this.fromAddress = from;
         this.toAddress = to;
@@ -28,20 +24,28 @@ public abstract class Transaction {
         this.feePriority = feePriority;
         this.feeStrategy = strategy;
         this.status = TransactionStatus.PENDING;
-        this.createdAt = LocalDateTime.now();
         this.fees = feeStrategy.calculateFees(this);
-        this.id = generateTransactionId();
     }
     
-    
+  
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Transaction that = (Transaction) o;
+        return id == that.id;
+    }
 
-    protected abstract String generateTransactionId();
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
 
-    public String getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(int id) {
         this.id = id;
     }
 

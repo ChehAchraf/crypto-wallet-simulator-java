@@ -6,6 +6,7 @@ import java.util.List;
 public class WalletService {
     private final WalletRepository walletRepo;
 
+
     public WalletService(WalletRepository walletRepo) {
         this.walletRepo = walletRepo;
     }
@@ -17,6 +18,5 @@ public class WalletService {
     public List<Wallet> getAllWallets(){
     		return this.walletRepo.findAll();
     }
-    
 
 }

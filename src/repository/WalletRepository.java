@@ -61,8 +61,12 @@ public class WalletRepository extends JdbcRepository<Wallet>{
         return "UPDATE wallets SET amount = ?, type = ? WHERE id = ?";
     }
 
+
+
     @Override
     protected String getInsertQuery() {
         return "INSERT INTO wallets(address,amount, type) VALUES (?, ?, ?)";
     }
+
+
 }
