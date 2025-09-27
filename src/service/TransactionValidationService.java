@@ -9,7 +9,7 @@ public class TransactionValidationService {
         this.walletService = walletService;
     }
     
-    public ValidationResult validateTransaction(String sourceAddress, String destinationAddress, double amount) {
+    public ValidationResult validateTransaction(String sourceAddress, String destinationAddress, double amount, double fees) {
         // Check if source wallet exists
         if (!walletService.findByAddress(sourceAddress).isPresent()) {
             return ValidationResult.error("Source wallet address not found in database.");
@@ -36,8 +36,8 @@ public class TransactionValidationService {
             return ValidationResult.error("Could not retrieve balance for source wallet.");
         }
         
-        if (balance.get() < amount) {
-            return ValidationResult.error("You don't have enough balance to send this amount. Your balance: " + balance.get());
+        if (balance.get() < amount + fees) {
+            return ValidationResult.error("You don't have enough balance to send this amount. Your balance: " + balance.get() + ", Required: " + (amount + fees));
         }
         
         return ValidationResult.success();

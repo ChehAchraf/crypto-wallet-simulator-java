@@ -3,7 +3,6 @@ import model.Transaction;
 import repository.TransactionRepository;
 
 import java.util.List;
-import java.util.Optional;
 
 
 public class TransactionService {
@@ -16,11 +15,8 @@ public class TransactionService {
     public boolean  creatTransaction(Transaction transaction) {
         try{
             transactionRepo.save(transaction);
-            System.out.println("Transaction saved to database with ID: " + transaction.getId());
             return true;
         }catch(Exception e){
-            System.out.println("Error creating transaction: " + e.getMessage());
-            e.printStackTrace();
             return false;
         }
     }

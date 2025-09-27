@@ -9,9 +9,8 @@ public class BalanceService {
         this.walletService = walletService;
     }
     
-    public boolean updateBalances(String sourceAddress, String destinationAddress, double amount) {
+    public boolean updateBalances(String sourceAddress, String destinationAddress, double amount, double fees) {
         try {
-            // Get current balances
             Optional<Double> sourceBalance = walletService.getBalance(sourceAddress);
             Optional<Double> destBalance = walletService.getBalance(destinationAddress);
             
@@ -19,8 +18,7 @@ public class BalanceService {
                 return false;
             }
             
-            // Update balances
-            walletService.updateBalance(sourceAddress, sourceBalance.get() - amount);
+            walletService.updateBalance(sourceAddress, sourceBalance.get() - amount - fees);
             walletService.updateBalance(destinationAddress, destBalance.get() + amount);
             
             return true;

@@ -21,7 +21,8 @@ public class TransactionProcessingService {
         TransactionValidationService.ValidationResult validation = validationService.validateTransaction(
             transaction.getFromAddress(), 
             transaction.getToAddress(), 
-            transaction.getAmount()
+            transaction.getAmount(),
+            transaction.getFees()
         );
         
         if (!validation.isValid()) {
@@ -39,7 +40,8 @@ public class TransactionProcessingService {
         if (!balanceService.updateBalances(
             transaction.getFromAddress(), 
             transaction.getToAddress(), 
-            transaction.getAmount()
+            transaction.getAmount(),
+            transaction.getFees()
         )) {
             return TransactionResult.error("Failed to update wallet balances");
         }
