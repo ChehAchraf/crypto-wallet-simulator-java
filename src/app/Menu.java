@@ -20,6 +20,7 @@ public class Menu {
     private Scanner scanner;
     private boolean isActive;
     private MempoolService mempoolService;
+    private String currentUserAddress;
     public Menu(MempoolService mempoolService) {
         this.scanner = new Scanner(System.in);
         this.isActive = true;
@@ -156,6 +157,7 @@ public class Menu {
             case "1":
                 System.out.print("\nPlease enter youre wallet address : ");
                 sourceAdresse = scanner.nextLine();
+                currentUserAddress = sourceAdresse; // Track current user for mempool display
 
                 System.out.print("\nNow please add the wallet address you wanna send BTC to : ");
                 toAddress = scanner.nextLine();
@@ -223,6 +225,7 @@ public class Menu {
             case "2":
                 System.out.print("\nPlease enter youre wallet address : ");
                 sourceAdresse = scanner.nextLine();
+                currentUserAddress = sourceAdresse; // Track current user for mempool display
 
                 System.out.print("\nNow please add the wallet address you wanna send ETH to : ");
                 toAddress = scanner.nextLine();
@@ -301,12 +304,59 @@ public class Menu {
 
     private void checkMempool() {
         System.out.println("======= MEMPOOL ========");
-        if(mempoolService.getMempool().isEmpty()){
-            System.out.println("There are no transactions in the mempool");
+        List<Transaction> transactions = mempoolService.getMempool();
+        String mempoolDisplay = formatMempoolDisplay(transactions, currentUserAddress);
+        System.out.println(mempoolDisplay);
+    }
+    
+    private String formatMempoolDisplay(List<Transaction> transactions, String currentUserAddress) {
+        if (transactions.isEmpty()) {
+            return "There are no transactions in the mempool";
         }
-        mempoolService.getMempool().stream().forEach(t -> {
-            System.out.println(t.getId() + " | " + t.getFromAddress() + " -> " + t.getToAddress() + " | Status: " + t.getStatus());
-        });
+        
+        StringBuilder display = new StringBuilder();
+        display.append("Transactions waiting for confirmation: ").append(transactions.size()).append("\n");
+        display.append("┌──────────────────────────────────┬────────┐\n");
+        display.append("│ Transaction (other users)│ Fees  │\n");
+        display.append("├──────────────────────────────────┼────────┤\n");
+        
+        for (Transaction tx : transactions) {
+            String address = tx.getFromAddress();
+            String displayAddress;
+            
+            if (address.equals(currentUserAddress)) {
+                displayAddress = ">>> VOTRE TX: " + address.substring(0, Math.min(8, address.length())) + "...";
+            } else {
+                displayAddress = address.substring(0, Math.min(8, address.length())) + "... (anonyme)";
+            }
+            
+            String currencySymbol = getCurrencySymbol(tx);
+            
+            display.append("│ ").append(String.format("%-32s", displayAddress)).append("│ ");
+            display.append(String.format("%-6.4f %s", tx.getFees(), currencySymbol)).append(" │\n");
+        }
+        
+        display.append("└──────────────────────────────────┴────────┘");
+        return display.toString();
+    }
+    
+    private String getCurrencySymbol(Transaction tx) {
+        if (tx.getCryptoType() != null) {
+            switch (tx.getCryptoType()) {
+                case BITCOIN:
+                    return "BTC";
+                case ETHEREUM:
+                    return "ETH";
+                default:
+                    return "?";
+            }
+        }
+        if (tx instanceof BitcoinTransaction) {
+            return "BTC";
+        } else if (tx instanceof EthereumTransaction) {
+            return "ETH";
+        }
+        return "?";
     }
 
 }

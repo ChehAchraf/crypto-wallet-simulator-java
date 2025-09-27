@@ -35,14 +35,12 @@ public class MempoolService {
             ts.setStatus(TransactionStatus.PENDING);
             mempool.add(ts);
             
-            System.out.println("Transaction added to mempool with ID: " + ts.getId());
 
             int delay = ts.getFeeStrategy().estimateConfirmationTime(ts);
             scheduler.schedule(() -> confirmTransaction(ts), delay, TimeUnit.SECONDS);
 
             return true;
         } catch (Exception e) {
-            System.out.println("Error adding transaction to mempool: " + e.getMessage());
             return false;
         }
     }
@@ -52,7 +50,6 @@ public class MempoolService {
             if (mempool.remove(tx)) {
                 tx.setStatus(TransactionStatus.CONFIRMED);
                 transactionService.updateTransaction(tx);
-                System.out.println("Transaction " + tx.getId() + " confirmed with fees " + tx.getFees());
                 return true;
             }
         }catch(Exception e){
@@ -65,4 +62,5 @@ public class MempoolService {
     public Transaction pollNext() {
         return mempool.poll();
     }
+    
 }

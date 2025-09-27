@@ -31,11 +31,34 @@ public class TransactionRepository extends JdbcRepository<Transaction> {
         String toAddress = rs.getString("to_address");
         double amount = rs.getDouble("amount");
         double fees = rs.getDouble("fees");
-        FeePriority feePriority = FeePriority.valueOf(rs.getString("fee_priority"));
-        TransactionStatus status = TransactionStatus.valueOf(rs.getString("status"));
-        CryptoType cryptoType = CryptoType.valueOf(rs.getString("crypto_type"));
+        
+        String feePriorityStr = rs.getString("fee_priority");
+        String statusStr = rs.getString("status");
+        String cryptoTypeStr = rs.getString("crypto_type");
+        
+        FeePriority feePriority;
+        TransactionStatus status;
+        CryptoType cryptoType;
+        
+        try {
+            feePriority = FeePriority.valueOf(feePriorityStr);
+        } catch (IllegalArgumentException e) {
+            feePriority = FeePriority.STANDARD;
+        }
+        
+        try {
+            status = TransactionStatus.valueOf(statusStr);
+        } catch (IllegalArgumentException e) {
+            status = TransactionStatus.PENDING;
+        }
+        
+        try {
+            cryptoType = CryptoType.valueOf(cryptoTypeStr);
+        } catch (IllegalArgumentException e) {
+            cryptoType = CryptoType.BITCOIN;
+        }
 
-        // Create appropriate transaction object
+        
         Transaction transaction;
         if (cryptoType == CryptoType.BITCOIN) {
             transaction = new BitcoinTransaction(fromAddress, toAddress, amount, feePriority);
