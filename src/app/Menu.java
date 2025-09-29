@@ -8,10 +8,12 @@ import model.*;
 import repository.TransactionRepository;
 import repository.WalletRepository;
 import service.*;
+import service.TransactionService;
+import java.util.logging.Logger;
 import util.InputValidation;
 
 public class Menu {
-
+    private static final Logger logger = Logger.getLogger(Menu.class.getName());
     private TransactionService transactionService;
     private WalletService walletService;
     private TransactionValidationService validationService;
@@ -87,6 +89,7 @@ public class Menu {
         switch (choice) {
             // case one => creating Bitcoin wallet 😁
             case "1":
+                    logger.info("Creating Wallet");
             		try {
                     System.out.print("\nPlease enter your amount : ");
                     String amountAsString = scanner.nextLine();
@@ -317,7 +320,7 @@ public class Menu {
         StringBuilder display = new StringBuilder();
         display.append("Transactions waiting for confirmation: ").append(transactions.size()).append("\n");
         display.append("┌──────────────────────────────────┬────────┐\n");
-        display.append("│ Transaction (other users)│ Fees  │\n");
+        display.append("│ Transaction (other users)        │ Fees   │\n");
         display.append("├──────────────────────────────────┼────────┤\n");
         
         for (Transaction tx : transactions) {
