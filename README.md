@@ -2,8 +2,8 @@
 
 A comprehensive Java-based cryptocurrency wallet simulator that supports Bitcoin and Ethereum transactions with realistic fee calculations, transaction validation, and balance management.
 
-![Project Screenshot](https://via.placeholder.com/800x400/2c3e50/ffffff?text=Crypto+Wallet+Simulator+Interface)
-*Screenshot placeholder - Replace with actual application interface*
+## 🎯 Project Showcase
+![Project Showcase](./showcase/project.png)
 
 ## 📋 Table of Contents
 
@@ -138,8 +138,7 @@ crypto-wallet-simulator/
 └── README.md                 # This file
 ```
 
-## 🎯 Project Showcase
-![Project Showcase](./showcase/project.png)
+
 
 ## 🎯 Class Diagram
 
